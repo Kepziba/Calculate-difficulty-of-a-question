@@ -1,0 +1,174 @@
+function main(String args[])
+    BEGIN
+        SET File file to new File("examly.txt")
+        SET Scanner scanner to new Scanner(file);  
+        WHILE data has next line
+            READ user data and assign to questionData
+            SET data[] to questionData.split("-")
+            SET manualDifficulty, timeDifficulty, changesDifficulty, hintsDifficulty, feedbackDifficulty, marksDifficulty to 0
+            Initialize ArrayList difficulty
+            Initialize difficultyRes
+            Initialize LinkedHashMap map
+            Initialize ArrayList a
+            SET time in map to a
+            Initialize ArrayList b
+            SET changesOrCompilations in map to b
+            Initialize ArrayList c
+            SET hints in map to c
+            SET type to data[0] and manual to data[1]
+            SET attendedStudents to data[2]
+            SET index to 2
+            FOR i=0 to attendedStudents-1
+                IF type equals "MCQ"
+                    FOR j=0 to 2
+                        INCREMENT index
+                        IF j == 0
+                            SET arr to map(time)
+                            add data[index] to arr
+                            SET arr to map(time)
+                        ELSE IF j == 1
+                            SET arr to map(changesOrCompilations)
+                            add data[index] to arr
+                            SET arr to map(changesOrCompilations)
+                        ELSE IF j == 2
+                            SET arr to map(hints)
+                            add data[index] to arr
+                            SET arr to map(hints)
+                        ENDIF
+                    ENDFOR
+                ELSE
+                    FOR j=0 to 3
+                        Initialize language
+                        INCREMENT index
+                        IF j == 0
+                            SET arr to map(time)
+                            add data[index] to arr
+                            SET arr to map(time)
+                        ELSE IF j == 1
+                            SET arr to map(changesOrCompilations)
+                            add data[index] to arr
+                            SET arr to map(changesOrCompilations)
+                        ELSE IF j == 2
+                            SET arr to map(hints)
+                            add data[index] to arr
+                            SET arr to map(hints)
+                        ELSE IF j == 3
+                            SET language to data[index]
+                        ENDIF
+                    ENDFOR
+                ENDIF
+            ENDFOR
+            INCREMENT index
+            Initialize feedback
+            IF attendedStudents != 0
+                SET feedback to data[index++]
+            SET right to data[index++]
+            SET wrong to data[index++]
+            SET partiallyCorrect to data[index++]
+            SET maximumMarks to data[index++]
+
+            IF attendedStudents != 0
+                SET timeTaken to 0
+                SET numberOfChangesOrCompilations, numberOfHints to 0 
+                FOR e to hashmap.entrySet
+                    IF e.key equals "time"
+                        SET e.value to arr
+                        FOR i=0 to (arr.size)-1
+                            INCREMENT timeTaken with timeTaken+arr(i)
+                        ENDFOR
+                    ELSE IF e.key equals "changesOrCompilations"
+                        SET e.value to arr
+                        FOR i=0 to (arr.size)-1
+                            INCREMENT numberOfChangesOrCompilations with numberOfChangesOrCompilations+arr(i)
+                        ENDFOR
+                    ELSE IF e.key equals "hints"
+                        SET e.value to arr
+                        FOR i=0 to (arr.size)-1
+                            INCREMENT numberOfHints with numberOfHints+arr(i)
+                        ENDFOR
+                    ENDIF
+                ENDFOR
+                COMPUTE timeAverage by dividing timeTaken with attendedStudents
+                COMPUTE changesAverage by dividing numberOfChangesOrCompilations with attendedStudents
+                COMPUTE hintsAverage by dividing numberOfHints with attendedStudents
+
+                //Diff : 1 , 2
+                IF type equals "MCQ"
+                    IF manual equals "Easy"
+                        SET timeDifficulty to (timeAverage<=1)?1:((timeAverage<=1.5)?2:3)
+                    ELSE IF manual equals "Medium"
+                        SET timeDifficulty to (timeAverage<=1.6)?1:((timeAverage<=2)?2:3)
+                    ELSE
+                        SET timeDifficulty to (timeAverage<=2)?1:((timeAverage<=3)?2:3)
+                    SET changesDifficulty to (changesAverage<2)?1:((changesAverage==2)?2:3)
+                    ENDIF
+                ELSE
+                    IF manual equals "Easy"
+                        SET timeDifficulty to (timeAverage<=6)?1:((timeAverage<=12)?2:3)
+                        SET changesDifficulty to (changesAverage<=3)?1:((changesAverage<=6)?2:3)
+                    ELSE IF manual equals "Medium"
+                        SET timeDifficulty to (timeAverage<=18)?1:((timeAverage<=28)?2:3)
+                        SET changesDifficulty to (changesAverage<=6)?1:((changesAverage<=12)?2:3)
+                    ELSE
+                        SET timeDifficulty to (timeAverage<=22)?1:((avg_time<=33)?2:3)
+                        SET changesDifficulty to (changesAverage<=10)?1:((changesAverage<=20)?2:3)
+                    ENDIF
+                ENDIF
+                add timeDifficulty and changesDifficulty to difficulty
+
+                //Diff : 3
+                IF manual equals "Easy"
+                    SET hintsDifficulty to (hintsAverage<3)?1:((hintsAverage==3)?2:3)
+                ELSE IF manual equals "Medium"
+                    SET hintsDifficulty to (hintsAverage<5)?1:((hintsAverage==5)?2:3)
+                ELSE
+                    SET hintsDifficulty to (hintsAverage<7)?1:((hintsAverage==7)?2:3)
+                ENDIF
+                add hintsDifficulty to difficulty
+
+                //Diff : 4
+                SET feedbackDifficulty to (feedback.equalsIgnoreCase("Easy"))?1:((feedback.equalsIgnoreCase("Medium"))?2:3)
+                add feedbackDifficulty to difficulty
+
+                //Diff : 5
+                SET marks to attendedStudents * maximumMarks
+                SET attendedStudentMarks to (right * maximumMarks) + ((partiallyCorrect) * (maximumMarks / 2))
+                SET marksDifficulty to (attendedStudentMarks<=(marks/3.0))?3:((attendedStudentMarks<=(marks/3.0)*2)?2:1)
+                add marksDifficulty to difficulty
+
+                //Diff: 6
+                SET manualDifficulty to (manual.equalsIgnoreCase("Easy"))?1:((manual.equalsIgnoreCase("Medium"))?2:3)
+                add manualDifficulty to difficulty
+
+                //Calculating difficulty of the question
+                SET easyDifficulty to (frequency of 1 in difficulty)*1
+                SET mediumDifficulty to (frequency of 2 in difficulty)*2
+                SET hardDifficulty to (frequency of 3 in difficulty)*3
+                IF easyDifficulty > mediumDifficulty and easyDifficulty > hardDifficulty
+                    SET difficultyRes to "Easy"
+                ELSE IF mediumDifficulty > easyDifficulty and mediumDifficulty > hardDifficulty
+                    SET difficultyRes to "Medium"
+                ELSE IF easyDifficulty == 2 and mediumDifficulty == 4 and hardDifficulty == 6
+                    SET difficultyRes to "Medium"
+                ELSE IF hardDifficulty>easyDifficulty and hardDifficulty>mediumDifficulty
+                    IF frequency of 3 in ArrayList == frequency of 1 in ArrayList
+                        SET difficultyRes to "Medium"
+                    ELSE IF frequency of 3 in ArrayList >= 3
+                        SET difficultyRes to "Hard"
+                    ELSE IF frequency of 3 in ArrayList > 0
+                        SET difficultyRes to "Medium"
+                    ENDIF
+                ELSE IF easyDifficulty == mediumDifficulty
+                    SET difficultyRes to "Easy"
+                ELSE IF easyDifficulty == hardDifficulty
+                    SET difficultyRes to "Medium"
+                ELSE IF mediumDifficulty == hardDifficulty
+                    SET difficultyRes to "Hard"
+                ENDIF
+
+                PRINT difficultyRes
+        ENDWHILE
+    EXCEPTION
+    WHEN Exception
+        PRINT "File not found!"
+END 
